@@ -1,0 +1,39 @@
+version: "3.7"
+
+
+services:
+  mariadb:
+    image: mariadb:10.11
+    container_name: mariadb_container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: board_api
+      MYSQL_USER: choi
+      MYSQL_PASSWORD: 1234
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uchoi -p1234 || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  board-api:
+    image: board-api
+    container_name: board-api
+    command: >
+      sh -c "PYTHONPATH=/code python /code/app/initial_data.py && uvicorn app.main:app --host 0.0.0.0 --port 8080"
+    ports:
+      - 8080:8080
+    volumes:
+      - ./app:/code/app
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+volumes:
+  mariadb_data:
