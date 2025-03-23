@@ -20,9 +20,10 @@ from sqlalchemy import Boolean
 
 class UserBase(BaseModel):
     name: str
+    email: EmailStr
     login_id: str
     password: str
-    is_superuser: bool
+    is_superuser: bool = False
 
 class UserCreate(UserBase):
     name: str
@@ -34,20 +35,20 @@ class UserCreate(UserBase):
     @classmethod
     def check_empty(cls, v, field):
         if not v or v.isspace():
-            raise ValueError("항목은 비어 있을 수 없습니다.")
+            raise ValueError("This field cannot be empty")
         return v
 
     @field_validator('password')
     @classmethod
     def validate_password(cls, v):
         if len(v) < 8:
-            raise ValueError("비밀번호는 최소 8자 이상이어야 합니다.")
+            raise ValueError("Password must be at least 8 characters long")
         
         if not any(char.isdigit() for char in v):
-            raise ValueError("비밀번호에는 최소 하나 이상의 숫자가 포함되어야 합니다.")
+            raise ValueError("Password must contain at least one digit")
         
         if not any(char.isalpha() for char in v):
-            raise ValueError("비밀번호에는 최소 하나 이상의 영문자가 포함되어야 합니다.")
+            raise ValueError("Password must contain at least one alphabetical character")
         
         return v
 

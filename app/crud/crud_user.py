@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 from app.db.base_class import Base
 
-from typing import Any, Dict, Optional, Union
+from typing import Optional
 
 from sqlalchemy.orm import Session
 from app.models.user import User
@@ -22,16 +22,6 @@ class CRUDUser():
     def get_by_email(self, db: Session, email: str) -> Optional[Base]:
         user = db.query(self.model).filter(self.model.email == email).first()
         return user
-    
-    # def update(
-    #     self, db: Session, db_obj: User, obj_in: Union[Dict[str, Any]]
-    # ) -> User:
-    #     if isinstance(obj_in, dict):
-    #         update_data = obj_in
-    #     else:
-    #         update_data = obj_in.dict(exclude_unset=True)
-
-    #     return super().update(db, db_obj=db_obj, obj_in=update_data)
     
     def create(self, db: Session, user_in: BaseModel) -> Base:
 

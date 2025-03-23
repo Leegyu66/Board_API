@@ -14,19 +14,6 @@ from typing import Sequence, Optional
     submitter = relationship("User", backpopulates="boards")
 '''
 
-# class BoardBase(BaseModel):
-#     # title: str
-#     # content: str
-#     # view_cnt: str
-#     # del_yn: int
-#     # reg_dt: datetime
-#     # mdf_dt: datetime
-#     title: str
-#     content: Optional[str] = None
-#     submitter_id: int
-
-#     model_config = {"arbitrary_types_allowed": True}
-
 class BoardCreate(BaseModel):
     title: str
     content: Optional[str] = None
@@ -47,6 +34,7 @@ class BoardInDBBase(BaseModel):
     view_cnt: int
     reg_dt: datetime
     mdf_dt: Optional[datetime] = None
+    del_yn: bool
     submitter_id: int
 
     class Config:

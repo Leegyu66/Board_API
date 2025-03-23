@@ -33,12 +33,6 @@ class CRUDBoard():
         return [BoardInDBBase(id=list.id, title=list.title, content=list.content, view_cnt=list.view_cnt, reg_dt=list.reg_dt, mdf_dt=list.mdf_dt, submitter_id=list.submitter_id) for list in lists]
     
     def create_board(self, db: Session, *, board_in: BaseModel) -> Base:
-        # obj_in_data = jsonable_encoder(board_in)
-        # db_obj = self.model(**obj_in_data)
-        # db.add(db_obj)
-        # db.commit()
-        # db.refresh(db_obj)
-
         user = db.query(User).filter(User.id == board_in.submitter_id).first()
 
         if not user:
@@ -72,7 +66,7 @@ class CRUDBoard():
             raise ValueError("Board does not exists")
         db.delete(board)
         db.commit()
-        return {"message": "삭제 완료"}
+        return {"message": "delete complete"}
     
     def update_board(self, db: Session, board_id, board_update) -> Base:
         board = db.query(self.model).filter(and_(self.model.id == board_id, self.model.del_yn == "N")).first()
