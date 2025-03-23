@@ -10,7 +10,7 @@ from app.db.base_class import Base
 class User(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String(20), nullable=False)
-    email = Column(String, nullable=True)
+    email = Column(String(30), nullable=True)
     login_id = Column(String(20), nullable=False)
     password = Column(String(30), nullable=False)
     reg_dt = Column(DateTime, nullable=False, default=datetime.now)
