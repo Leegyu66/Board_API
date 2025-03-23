@@ -1,6 +1,3 @@
-import sys
-sys.path.insert(0, '/Users/ogq_gyn_in/dev/Board-API')
-
 from sqlalchemy import Integer, String, Column, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from datetime import datetime

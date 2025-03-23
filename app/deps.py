@@ -1,6 +1,3 @@
-import sys
-sys.path.insert(0, '/Users/ogq_gyn_in/dev/Board-API')
-
 from typing import Generator
 
 from app.db.session import SessionLocal

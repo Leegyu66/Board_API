@@ -1,6 +1,5 @@
-import sys
 import logging
-sys.path.insert(0, '/Users/ogq_gyn_in/dev/Board-API')
+
 
 from app.db.base import Base
 from app.db.session import engine

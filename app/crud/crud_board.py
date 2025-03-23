@@ -1,6 +1,3 @@
-import sys
-sys.path.insert(0, '/Users/ogq_gyn_in/dev/Board-API')
-
 from pydantic import BaseModel
 from app.models.board import Board
 from app.schemas.board import BoardCreate, BoardUpdate, BoardDelete, BoardInDBBase
@@ -69,6 +66,14 @@ class CRUDBoard():
 
         return board
     
+    def delete_hard(self, db: Session, board_id: int) -> Base:
+        board = db.query(self.model).filter(self.model.id == board_id).first()
+        if not board:
+            raise ValueError("Board does not exists")
+        db.delete(board)
+        db.commit()
+        return {"message": "삭제 완료"}
+    
     def update_board(self, db: Session, board_id, board_update) -> Base:
         board = db.query(self.model).filter(and_(self.model.id == board_id, self.model.del_yn == "N")).first()
 
@@ -80,7 +85,15 @@ class CRUDBoard():
         board.mdf_dt = datetime.now(pytz.timezone("Asia/Seoul"))
         db.commit()
         db.refresh(board)
-        return board        
+        return board   
+
+    def get_user_posts(self, db: Session, user_id: int) -> List[Base]:
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise ValueError("User not found")
+
+        lists = db.query(Board).filter(Board.del_yn == "N", Board.submitter_id == user.id).all()
+        return [BoardInDBBase (id=list.id, title=list.title, content=list.content, view_cnt=list.view_cnt, reg_dt=list.reg_dt, mdf_dt=list.mdf_dt, submitter_id=list.submitter_id) for list in lists]     
         
 
 board = CRUDBoard(Board)

@@ -15,10 +15,10 @@ def init_db(db: Session) -> None:
                 name="Kyuyoung",
                 email=FIRST_SUPERUSER,
                 login_id="adobe9938",
-                password="1234",
+                password="c1234567",
                 is_superuser=True
             )
-            user = crud.user.create(db, obj_in=user_in)
+            user = crud.user.create(db, user_in=user_in)
         else:
             logger.warning(
                 "exist"

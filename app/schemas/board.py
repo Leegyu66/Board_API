@@ -43,10 +43,10 @@ class BoardDelete(BaseModel):
 class BoardInDBBase(BaseModel):
     id: int
     title: str
-    content: Optional[str]
+    content: Optional[str] = None
     view_cnt: int
     reg_dt: datetime
-    mdf_dt: Optional[datetime]
+    mdf_dt: Optional[datetime] = None
     submitter_id: int
 
     class Config:
