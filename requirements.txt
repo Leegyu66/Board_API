@@ -62,3 +62,5 @@ zipp==3.21.0
 pymysql
 passlib
 python-multipart
+pydantic-settings
+python-jose[cryptography]

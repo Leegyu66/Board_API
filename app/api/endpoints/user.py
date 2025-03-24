@@ -1,13 +1,14 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Depends, Request
 
 from sqlalchemy.orm import Session
 
 from app.schemas.user import UserCreate
+from app.schemas.token import Token
 from app import deps
 from app import crud
 
 from fastapi.security import OAuth2PasswordRequestForm
-from fastapi import status
+from fastapi import Response
 
 api_router = APIRouter()
 
@@ -22,18 +23,20 @@ def create_user(
 
 @api_router.post("/login", status_code=200)
 def login(
+    response: Response,
     login_form: OAuth2PasswordRequestForm = Depends(), 
     db: Session = Depends(deps.get_db),
-) -> dict:
-    
-    user = crud.user.get_by_email(db, login_form.username)
+) -> Token:
 
-    if not user:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid user or password")
-    
-    res = crud.user.verify_password(login_form.password, user.password)
+    token = crud.user.login(response=response, login_form=login_form, db=db)
+    return token
 
-    if not res:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid user or password")
+@api_router.post("/logout", status_code=200)
+def logout(
+    response: Response,
+    request: Request
+) -> None:
     
-    return {"message": "Login successful", "user_id": user.id}
+    # access_token = request.cookies.get("access_token")
+    response.delete_cookie(key="access_token")
+    return {"message": "success"}

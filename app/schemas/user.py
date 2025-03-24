@@ -1,7 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr, field_validator
-from sqlalchemy import Boolean
+from pydantic import BaseModel, EmailStr, field_validator, Field
 
 '''
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -18,24 +17,18 @@ from sqlalchemy import Boolean
         uselist=True)
 '''
 
-class UserBase(BaseModel):
+class UserCreate(BaseModel):
     name: str
     email: EmailStr
     login_id: str
     password: str
     is_superuser: bool = False
 
-class UserCreate(UserBase):
-    name: str
-    email: EmailStr
-    login_id: str
-    password: str
-
     @field_validator('email', 'name', 'password')
     @classmethod
-    def check_empty(cls, v, field):
+    def check_empty(cls, v):
         if not v or v.isspace():
-            raise ValueError("This field cannot be empty")
+            raise ValueError(f"field cannot be empty")
         return v
 
     @field_validator('password')
@@ -53,11 +46,13 @@ class UserCreate(UserBase):
         return v
 
 
-class UserInDBBase(UserBase):
+class UserInDB(BaseModel):
     id: Optional[int] = None
+    name: str
+    email: EmailStr
+    login_id: str
+    password: str
+    is_superuser: bool = False
 
     class Config:
         orm_mode = True
-
-class User(UserInDBBase):
-    pass

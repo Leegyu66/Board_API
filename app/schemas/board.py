@@ -1,6 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel
-from typing import Sequence, Optional
+from typing import Optional
 
 '''
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -17,7 +17,6 @@ from typing import Sequence, Optional
 class BoardCreate(BaseModel):
     title: str
     content: Optional[str] = None
-    submitter_id: int
 
 class BoardUpdate(BaseModel):
     title: Optional[str] = None
@@ -27,24 +26,14 @@ class BoardDelete(BaseModel):
     id: int
     del_yn: str
 
-class BoardInDBBase(BaseModel):
+class BoardInDB(BaseModel):
     id: int
     title: str
     content: Optional[str] = None
     view_cnt: int
     reg_dt: datetime
     mdf_dt: Optional[datetime] = None
-    del_yn: bool
     submitter_id: int
 
     class Config:
         orm_mode = True
-
-class Board(BoardInDBBase):
-    pass
-
-class BoardInDB(BoardInDBBase):
-    pass
-
-class BoardSearchResults(BoardInDBBase):
-    results: Sequence

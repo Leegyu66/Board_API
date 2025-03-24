@@ -1,2 +1,2 @@
-from .board import Board, BoardCreate
-from .user import User, UserCreate
+from .board import BoardInDB, BoardCreate
+from .user import UserInDB, UserCreate
