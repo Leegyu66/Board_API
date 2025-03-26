@@ -11,7 +11,7 @@ class Board(Base):
     content = Column(String(1000), nullable=True)
     view_cnt = Column(Integer, nullable=False, default=0)
     del_yn = Column(String(2), nullable=False, default="N")
-    reg_dt = Column(DateTime, nullable=False, default=datetime.now(pytz.timezone("Asia/Seoul")))
+    reg_dt = Column(DateTime, nullable=False)
     mdf_dt = Column(DateTime, nullable=True)
     submitter_id = Column(Integer, ForeignKey("user.id"))
     submitter = relationship("User", back_populates="boards")

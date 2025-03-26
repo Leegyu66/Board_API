@@ -1,54 +1,386 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FastAPI Board</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FastAPI Board with Signup</title>
+  
+  <!-- 간단 CSS -->
+  <style>
+    body {
+      margin: 0; padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f6f8;
+    }
+    .container {
+      max-width: 800px; margin: 40px auto; padding: 20px;
+      background: #fff; border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    button {
+      background: #007BFF; color: #fff; border: none; padding: 6px 12px;
+      border-radius: 4px; cursor: pointer;
+    }
+    button:hover { background: #0056b3; }
+    input[type="text"], input[type="password"], textarea {
+      width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    /* 처음에 안 보이는 애들 */
+    #boardSection, #logoutButton, #signupForm {
+      display: none;
+    }
+    ul { list-style: none; padding: 0; }
+    li {
+      padding: 10px; border: 1px solid #eee; margin-bottom: 8px;
+      border-radius: 4px; background: #fafafa; cursor: pointer;
+    }
+    li:hover { background: #f1f1f1; }
+  </style>
 </head>
 <body>
-  <h1>Welcome to the FastAPI Board</h1>
-  <p>This is the home page.</p>
+  <div class="container">
+    <h1>Welcome to the FastAPI Board</h1>
+    <p>This is the home page.</p>
 
-  <!-- 로그인 폼 -->
-  <h2>Login</h2>
-  <form id="loginForm">
-    <input type="text" id="username" placeholder="Username" required>
-    <input type="password" id="password" placeholder="Password" required>
-    <button type="submit">Login</button>
-  </form>
+    <!-- 로그인 섹션 -->
+    <h2>Login</h2>
+    <form id="loginForm">
+      <input type="text" id="username" placeholder="Username" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <button type="submit">Login</button>
+    </form>
 
-  <button id="logoutButton" style="display:none;">Logout</button>
+    <!-- 회원가입 버튼 (로그인 전) -->
+    <button id="showSignupForm">Sign Up</button>
 
-  <div id="boardSection" style="display:none;">
-    <h2>Board Posts</h2>
-    <ul id="boardList"></ul>
-    <button id="createPostButton">Create Post</button>
+    <!-- 회원가입 폼 -->
+    <form id="signupForm">
+        <h2>Sign Up</h2>
+        <label for="name">Name</label>
+        <input type="text" id="name" placeholder="Name" required />
+      
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="Enter your email" required />
+      
+        <label for="loginId">Login ID</label>
+        <input type="text" id="loginId" placeholder="Login ID" required />
+      
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Password" required />
+      
+        <button type="submit">Register</button>
+        <button type="button" id="cancelSignupButton">Cancel</button>
+    </form>
 
-    <!-- 글쓰기 폼 -->
-    <div id="createPostForm" style="display:none;">
-      <h3>Create a Post</h3>
-      <label for="postTitle">Title</label>
-      <input type="text" id="postTitle" placeholder="Enter title" required><br>
+    <!-- 로그아웃 버튼 (로그인 후) -->
+    <button id="logoutButton">Logout</button>
 
-      <label for="postContent">Content</label><br>
-      <textarea id="postContent" placeholder="Enter content" required></textarea><br>
+    <!-- 게시판 섹션 (로그인 후) -->
+    <div id="boardSection">
+      <h2>Board Posts</h2>
+      <ul id="boardList"></ul>
+      <button id="createPostButton">Create Post</button>
 
-      <button id="submitPostButton">Submit</button>
-      <button id="cancelPostButton">Cancel</button>
-    </div>
+      <!-- 글쓰기 폼 -->
+      <div id="createPostForm" style="display:none;">
+        <h3>Create a Post</h3>
+        <label for="postTitle">Title</label>
+        <input type="text" id="postTitle" placeholder="Enter title" required /><br />
 
-    <!-- ✅ 상세 보기 영역 -->
-    <div id="postDetails" style="display:none; margin-top: 20px;">
-      <h3 id="detailTitle"></h3>
-      <p id="detailContent"></p>
-      <p id="detailViewcnt"></p>
-      <button id="closePostDetails">Close</button>
-      <button id="editPostButton">Edit</button>
+        <label for="postContent">Content</label><br />
+        <textarea id="postContent" placeholder="Enter content" required></textarea><br />
+
+        <button id="submitPostButton">Submit</button>
+        <button id="cancelPostButton">Cancel</button>
+      </div>
+
+      <!-- 상세 보기 영역 -->
+      <div id="postDetails" style="display:none;">
+        <h3 id="detailTitle"></h3>
+        <p id="detailContent"></p>
+        <p id="detailViewcnt"></p>
+        <button id="closePostDetails">Close</button>
+        <button id="editPostButton">Edit</button>
+      </div>
     </div>
   </div>
-</body>
 
-<!-- 스크립트 -->
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="front/app.js" defer></script>
+  <!-- axios와 자바스크립트 -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    // 백엔드 주소 (수정 가능)
+    const API_URL = "http://localhost:8080";
+
+    // DOM 요소들
+    const loginForm = document.getElementById("loginForm");
+    const showSignupFormButton = document.getElementById("showSignupForm");
+    const signupForm = document.getElementById("signupForm");
+    const signupUsername = document.getElementById("signupUsername");
+    const signupPassword = document.getElementById("signupPassword");
+    const cancelSignupButton = document.getElementById("cancelSignupButton");
+
+    const logoutButton = document.getElementById("logoutButton");
+    const boardSection = document.getElementById("boardSection");
+    const boardList = document.getElementById("boardList");
+    const createPostButton = document.getElementById("createPostButton");
+    const createPostForm = document.getElementById("createPostForm");
+    const submitPostButton = document.getElementById("submitPostButton");
+    const cancelPostButton = document.getElementById("cancelPostButton");
+    const postTitleInput = document.getElementById("postTitle");
+    const postContentInput = document.getElementById("postContent");
+    const editPostButton = document.getElementById("editPostButton");
+    const detailTitle = document.getElementById("detailTitle");
+    const detailContent = document.getElementById("detailContent");
+    const postDetails = document.getElementById("postDetails");
+    const detailViewcnt = document.getElementById("detailViewcnt");
+    const closePostDetailsButton = document.getElementById("closePostDetails");
+
+    let currentPostId = null;
+
+    /* ----------------------------
+       (A) 회원가입 로직
+    ---------------------------- */
+    showSignupFormButton.addEventListener("click", () => {
+      signupForm.style.display = "block";
+    });
+
+    cancelSignupButton.addEventListener("click", () => {
+      signupForm.style.display = "none";
+      signupUsername.value = "";
+      signupPassword.value = "";
+    });
+
+    signupForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const newUsername = signupUsername.value;
+      const newPassword = signupPassword.value;
+
+      if (!newUsername || !newPassword) {
+        alert("Please enter username and password.");
+        return;
+      }
+
+      try {
+        await axios.post(`${API_URL}/user`, {
+          username: newUsername,
+          password: newPassword
+        });
+        alert("Sign Up Success!");
+        // 완료 후 폼 닫기
+        signupForm.style.display = "none";
+        signupUsername.value = "";
+        signupPassword.value = "";
+      } catch (error) {
+        alert("Sign Up failed!");
+        console.error(error);
+      }
+    });
+
+
+    /* ----------------------------
+       (B) 로그인 로직
+    ---------------------------- */
+    loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        const response = await axios.post(
+          `${API_URL}/user/login`,
+          new URLSearchParams({ username, password }),
+          { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+        );
+
+        // 토큰을 쿠키에 저장
+        document.cookie = `access_token=${response.data.access_token}; path=/`;
+
+        // 로그인 성공 시
+        loginForm.style.display = "none";
+        signupForm.style.display = "none";
+        showSignupFormButton.style.display = "none";
+
+        boardSection.style.display = "block";
+        logoutButton.style.display = "inline-block";
+
+        loadBoardPosts();
+      } catch (error) {
+        alert("Login failed!");
+        console.error(error);
+      }
+    });
+
+    /* ----------------------------
+       (C) 로그아웃
+    ---------------------------- */
+    logoutButton.addEventListener("click", async () => {
+      try {
+        await axios.post(`${API_URL}/user/logout`, {}, {
+          headers: {
+            "Authorization": `Bearer ${getCookie("access_token")}`
+          }
+        });
+        document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+
+        boardSection.style.display = "none";
+        logoutButton.style.display = "none";
+        
+        loginForm.style.display = "block";
+        showSignupFormButton.style.display = "inline-block";
+      } catch (error) {
+        alert("Logout failed!");
+        console.error(error);
+      }
+    });
+
+    /* ----------------------------
+       (D) 게시판 로드
+    ---------------------------- */
+    async function loadBoardPosts() {
+      try {
+        const response = await axios.get(`${API_URL}/board`, {
+          headers: {
+            "Authorization": `Bearer ${getCookie("access_token")}`
+          }
+        });
+
+        boardList.innerHTML = "";
+        response.data.forEach(post => {
+          const listItem = document.createElement("li");
+          listItem.textContent = post.title;
+
+          listItem.addEventListener("click", async () => {
+            try {
+              const res = await axios.get(`${API_URL}/board/${post.id}`, {
+                headers: {
+                  "Authorization": `Bearer ${getCookie("access_token")}`
+                }
+              });
+              const board = res.data;
+              currentPostId = post.id;
+
+              detailTitle.textContent = board.title;
+              detailContent.textContent = board.content;
+              detailViewcnt.textContent = `View Count: ${board.view_cnt}`;
+              postDetails.style.display = "block";
+            } catch (error) {
+              alert("글을 불러오는 데 실패!");
+              console.error(error);
+            }
+          });
+
+          // 삭제 버튼
+          const deleteButton = document.createElement("button");
+          deleteButton.textContent = "삭제";
+          deleteButton.style.marginLeft = "10px";
+          deleteButton.addEventListener("click", async (e) => {
+            e.stopPropagation();
+            if (confirm("정말 삭제하시겠습니까?")) {
+              try {
+                await axios.delete(`${API_URL}/board/${post.id}`, {
+                  headers: {
+                    "Authorization": `Bearer ${getCookie("access_token")}`
+                  }
+                });
+                alert("삭제 완료!");
+                postDetails.style.display = "none";
+                loadBoardPosts();
+              } catch (error) {
+                alert("삭제 실패!");
+                console.error(error);
+              }
+            }
+          });
+
+          listItem.appendChild(deleteButton);
+          boardList.appendChild(listItem);
+        });
+      } catch (error) {
+        alert("Failed to load board posts");
+        console.error(error);
+      }
+    }
+
+    // 상세 보기 닫기
+    closePostDetailsButton.addEventListener("click", () => {
+      postDetails.style.display = "none";
+    });
+
+    // 글 작성 폼 열기
+    createPostButton.addEventListener("click", () => {
+      createPostForm.style.display = "block";
+      submitPostButton.textContent = "Submit";
+      currentPostId = null;
+    });
+
+    // 글 작성 / 수정
+    submitPostButton.addEventListener("click", async () => {
+      const title = postTitleInput.value;
+      const content = postContentInput.value;
+
+      if (!title || !content) {
+        alert("Both title and content are required.");
+        return;
+      }
+
+      try {
+        if (currentPostId) {
+          // 글 수정
+          await axios.patch(`${API_URL}/board/${currentPostId}`, { title, content }, {
+            headers: {
+              "Authorization": `Bearer ${getCookie("access_token")}`
+            }
+          });
+          alert("수정 완료!");
+        } else {
+          // 새 글 작성
+          await axios.post(`${API_URL}/board`, { title, content }, {
+            headers: {
+              "Authorization": `Bearer ${getCookie("access_token")}`
+            }
+          });
+          alert("작성 완료!");
+        }
+
+        // 폼 초기화
+        postTitleInput.value = "";
+        postContentInput.value = "";
+        createPostForm.style.display = "none";
+        submitPostButton.textContent = "Submit";
+        currentPostId = null;
+
+        loadBoardPosts();
+      } catch (error) {
+        alert("등록 실패!");
+        console.error(error);
+      }
+    });
+
+    // 글 작성 취소
+    cancelPostButton.addEventListener("click", () => {
+      createPostForm.style.display = "none";
+      submitPostButton.textContent = "Submit";
+      currentPostId = null;
+    });
+
+    // 글 수정 버튼 → 기존 내용 폼으로
+    editPostButton.addEventListener("click", () => {
+      if (!currentPostId) return;
+      postTitleInput.value = detailTitle.textContent;
+      postContentInput.value = detailContent.textContent;
+      createPostForm.style.display = "block";
+      submitPostButton.textContent = "Update";
+      postDetails.style.display = "none";
+    });
+
+    // 쿠키에서 토큰 꺼내기
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(";").shift();
+      return null;
+    }
+  </script>
+</body>
 </html>

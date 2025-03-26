@@ -33,6 +33,7 @@ class CRUDBoard():
         
         board = self.model(**board_in.dict())
         board.submitter_id = current_user.id
+        board.reg_dt = pytz.timezone("Asia/Seoul")
         db.add(board)
         db.commit()
         db.refresh(board)
