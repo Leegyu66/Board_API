@@ -6,3 +6,6 @@ class BadRequestError(Exception):
 
 class Forbidden(Exception):
     pass
+
+class UnAuthorized(Exception):
+    pass

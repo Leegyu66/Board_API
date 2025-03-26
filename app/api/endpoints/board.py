@@ -11,7 +11,7 @@ from app.core.auth import get_current_user
 api_router = APIRouter()
 
 # 게시판 읽기 - 1
-@api_router.get("/", status_code=200)
+@api_router.get("", status_code=200)
 def read_board(
     db: Session = Depends(deps.get_db)
 ) -> List:
@@ -41,7 +41,7 @@ def get_user_posts(
     return boards
 
 # 게시판 쓰기
-@api_router.post("/", status_code=201, response_model=BoardInDB)
+@api_router.post("", status_code=201, response_model=BoardInDB)
 def create_board(
     board_in: BoardCreate,
     db: Session = Depends(deps.get_db),
@@ -69,9 +69,10 @@ def update_board(
 def delete_board(
     board_id: int,
     db: Session = Depends(deps.get_db),
+    current_user = Depends(get_current_user)
 ) -> BoardInDB:
     
-    board = crud.board.delete(db=db, board_id=board_id)
+    board = crud.board.delete(db=db, board_id=board_id, current_user=current_user)
     return board
 
 
@@ -79,7 +80,8 @@ def delete_board(
 def delete_board_hard(
     board_id: int,
     db: Session = Depends(deps.get_db),
+    current_user = Depends(get_current_user)
 ) -> dict:
     
-    board = crud.board.delete_hard(db=db, board_id=board_id)
+    board = crud.board.delete_hard(db=db, board_id=board_id, current_user=current_user)
     return board

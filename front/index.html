@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FastAPI Board</title>
+</head>
+<body>
+  <h1>Welcome to the FastAPI Board</h1>
+  <p>This is the home page.</p>
+
+  <!-- 로그인 폼 -->
+  <h2>Login</h2>
+  <form id="loginForm">
+    <input type="text" id="username" placeholder="Username" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button type="submit">Login</button>
+  </form>
+
+  <button id="logoutButton" style="display:none;">Logout</button>
+
+  <div id="boardSection" style="display:none;">
+    <h2>Board Posts</h2>
+    <ul id="boardList"></ul>
+    <button id="createPostButton">Create Post</button>
+
+    <!-- 글쓰기 폼 -->
+    <div id="createPostForm" style="display:none;">
+      <h3>Create a Post</h3>
+      <label for="postTitle">Title</label>
+      <input type="text" id="postTitle" placeholder="Enter title" required><br>
+
+      <label for="postContent">Content</label><br>
+      <textarea id="postContent" placeholder="Enter content" required></textarea><br>
+
+      <button id="submitPostButton">Submit</button>
+      <button id="cancelPostButton">Cancel</button>
+    </div>
+
+    <!-- ✅ 상세 보기 영역 -->
+    <div id="postDetails" style="display:none; margin-top: 20px;">
+      <h3 id="detailTitle"></h3>
+      <p id="detailContent"></p>
+      <p id="detailViewcnt"></p>
+      <button id="closePostDetails">Close</button>
+      <button id="editPostButton">Edit</button>
+    </div>
+  </div>
+</body>
+
+<!-- 스크립트 -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="front/app.js" defer></script>
+</html>

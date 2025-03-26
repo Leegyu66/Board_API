@@ -57,17 +57,21 @@ class CRUDBoard():
 
         return board
     
-    def delete_hard(self, db: Session, board_id: int) -> Base:
+    def delete_hard(self, db: Session, board_id: int, current_user: User) -> Base:
         board = db.query(self.model).filter(self.model.id == board_id).first()
+
         if not board:
             raise NotFoundError("Board does not exists")
+
+        if board.submitter_id != current_user.id:
+            raise Forbidden("You do not have permission to update this board")
+        
         db.delete(board)
         db.commit()
         return {"message": "delete complete"}
     
     def update_board(self, db: Session, board_id: int, board_update: BoardUpdate, current_user: User) -> Base:
         board = db.query(self.model).filter(and_(self.model.id == board_id, self.model.del_yn == "N")).first()
-        print(board_update)
 
         if not board:
             raise NotFoundError("Board does not exist")

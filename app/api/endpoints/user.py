@@ -12,7 +12,7 @@ from fastapi import Response
 
 api_router = APIRouter()
 
-@api_router.post("/", status_code=201, response_model=UserCreate)
+@api_router.post("", status_code=201, response_model=UserCreate)
 def create_user(
     user_in: UserCreate,
     db: Session = Depends(deps.get_db),

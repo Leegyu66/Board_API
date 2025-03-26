@@ -30,6 +30,7 @@ services:
       - 8080:8080
     volumes:
       - ./app:/code/app
+      - ./front:/code/front
     depends_on:
       mariadb:
         condition: service_healthy
