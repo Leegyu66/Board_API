@@ -53,7 +53,7 @@ signupForm.addEventListener("submit", async (event) => {
   const nameValue = document.getElementById("name").value;
   const emailValue = document.getElementById("email").value;
   const loginIdValue = document.getElementById("loginId").value;
-  const passwordValue = document.getElementById("password").value;
+  const passwordValue = document.getElementById("signupPassword").value;
 
   // 필수 값 체크
   if (!nameValue || !emailValue || !loginIdValue || !passwordValue) {
@@ -167,13 +167,21 @@ async function loadBoardPosts() {
 
       // 상세 보기
       listItem.addEventListener("click", async () => {
+        // 1) 이미 상세 보기 열려 있고, 현재 post.id와 같다면 → 닫기
+        if (postDetails.style.display !== "none" && currentPostId === post.id) {
+          postDetails.style.display = "none";
+          currentPostId = null;
+          return; // 여기서 함수 종료
+        }
+      
+        // 2) 그게 아니라면 → (기존 로직대로) 해당 게시글 상세 보기 열기
         try {
           const res = await axios.get(`${API_URL}/board/${post.id}`, {
             headers: { "Authorization": `Bearer ${getCookie("access_token")}` }
           });
           const board = res.data;
           currentPostId = post.id;
-
+      
           detailTitle.textContent = board.title;
           detailContent.textContent = board.content;
           detailViewcnt.textContent = `View Count: ${board.view_cnt}`;

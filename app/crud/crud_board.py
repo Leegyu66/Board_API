@@ -33,7 +33,7 @@ class CRUDBoard():
         
         board = self.model(**board_in.dict())
         board.submitter_id = current_user.id
-        board.reg_dt = pytz.timezone("Asia/Seoul")
+        board.reg_dt = datetime.now(pytz.timezone("Asia/Seoul"))
         db.add(board)
         db.commit()
         db.refresh(board)
@@ -45,8 +45,8 @@ class CRUDBoard():
         db.refresh(board)
 
     def delete(self, db: Session, board_id: int, current_user: User) -> Base:
-        board = db.query(self.model).filter(self.model.id == board_id).first()
-        if not board or board.del_yn == "Y":
+        board = db.query(self.model).filter(and_(self.model.id == board_id, self.model.del_yn == "N")).first()
+        if not board:
             raise NotFoundError("Board does not exists")
         
         if board.submitter_id != current_user.id:
