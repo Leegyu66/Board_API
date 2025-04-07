@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from typing import List
 from sqlalchemy.orm import Session
 
-from app.schemas.board import BoardInDB, BoardCreate, BoardUpdate
+from app.schemas.board import BoardInDB, BoardCreate, BoardInDB_with_username, BoardUpdate
 from app import deps
 from app import crud
 from app.core.auth import get_current_user
@@ -20,13 +20,14 @@ def read_board(
     return lists
 
 # 게시판 읽기 - 2
-@api_router.get("/{board_id}", status_code=200, response_model=BoardInDB)
+@api_router.get("/{board_id}", status_code=200, response_model=BoardInDB_with_username)
 def fetch_board(
     board_id: int,
     db: Session = Depends(deps.get_db)
 ) -> dict:
 
     result = crud.board.get(db=db, id=board_id)
+    result.name = result.submitter.name
     return result
 
 

@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 from app.exceptions.custom_exception import Forbidden, NotFoundError
 from app.models.board import Board
-from app.schemas.board import BoardInDB, BoardUpdate
-from sqlalchemy.orm import Session 
+from app.schemas.board import BoardInDB, BoardInDB_with_username, BoardUpdate
+from sqlalchemy.orm import Session, joinedload
 from app.db.base_class import Base
 from sqlalchemy import and_
 from datetime import datetime
@@ -27,7 +27,7 @@ class CRUDBoard():
         
     def get_multi(self, db: Session) -> List[Base]:
         lists = db.query(self.model).filter(self.model.del_yn == 'N').all()
-        return [BoardInDB(id=list.id, title=list.title, content=list.content, view_cnt=list.view_cnt, reg_dt=list.reg_dt, mdf_dt=list.mdf_dt, del_yn=list.del_yn, submitter_id=list.submitter_id) for list in lists]
+        return [BoardInDB_with_username(id=list.id, title=list.title, content=list.content, view_cnt=list.view_cnt, reg_dt=list.reg_dt, mdf_dt=list.mdf_dt, del_yn=list.del_yn, submitter_id=list.submitter_id, name=list.submitter.name) for list in lists]
     
     def create_board(self, db: Session, *, board_in: BaseModel, current_user) -> Base:
         

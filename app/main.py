@@ -2,12 +2,14 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
+from app.core.middlewares import add_middleware
 from app.api import api_router
 from app.exceptions import register_exception_handlers
 
 app = FastAPI(title="Board API", openapi_url="/openapi.json")
 
 register_exception_handlers(app)
+add_middleware(app)
 
 app.mount("/front", StaticFiles(directory="front"), name="front")
 

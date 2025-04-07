@@ -1,0 +1,25 @@
+image: docker:latest
+
+services:
+  - docker:dind
+
+variables:
+  DOCKER_DRIVER: overlay2
+
+stages:
+  - build
+  - test
+
+before_script:
+  - apk add --no-cache docker-cli docker-compose curl
+
+build_job:
+  stage: build
+  script:
+    - docker-compose build
+
+test_job:
+  stage: test
+  script:
+    # 테스트 전용 컨테이너 실행 → 종료 코드 따라 파이프라인 성공/실패 판단
+    - docker-compose up --abort-on-container-exit --exit-code-from test

@@ -37,3 +37,6 @@ class BoardInDB(BaseModel):
 
     class Config:
         orm_mode = True
+
+class BoardInDB_with_username(BoardInDB):
+    name: str

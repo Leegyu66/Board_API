@@ -35,5 +35,16 @@ services:
       mariadb:
         condition: service_healthy
 
+
+  test:
+    image: board_api
+    container_name: board_test_runner
+    command: >
+      sh -c "PYTHONPATH=/code/tests python -m unittest discover -s tests"
+    volumes:
+      - ./tests:/code/tests
+    depends_on:
+      - board-api
+
 volumes:
   mariadb_data:
