@@ -1,0 +1,33 @@
+name: board_api_cicd
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  docker_test_and_run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+
+      - name: Build Docker image
+        run: |
+          docker build -t board_api .
+
+      - name: Run tests in Docker container
+        run: |
+          docker run board_api python tests/board_test.py
+
+      - name: Run docker-compose
+        run: |
+          docker-compose up -d
