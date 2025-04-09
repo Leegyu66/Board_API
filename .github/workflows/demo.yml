@@ -44,3 +44,4 @@ jobs:
             git pull origin main
             sudo docker build -t "board_api" .
             sudo docker-compose up -d
+            
