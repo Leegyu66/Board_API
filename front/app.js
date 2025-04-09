@@ -5,7 +5,7 @@
 // ★ CORS 환경에서 쿠키 전송을 허용하려면
 axios.defaults.withCredentials = true;   // 모든 요청에 쿠키/인증정보 포함
 
-const API_URL = "http://192.168.100.145:8080";  // 백엔드 API 주소 (필요에 따라 수정)
+const API_URL = "http://3.39.195.46:8080";  // 백엔드 API 주소 (필요에 따라 수정)
 
 // DOM 요소들
 const loginForm = document.getElementById("loginForm");
