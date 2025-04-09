@@ -31,3 +31,15 @@ jobs:
       - name: Run docker-compose
         run: |
           docker-compose up -d
+
+      - name: deployments
+        uses: appleboy/ssh-action@v0.1.6 # ssh 접속하는 오픈소스
+        with:
+          host: ${{ secrets.REMOTE_IP }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.REMOTE_PRIVATE_KEY }}
+          port: ${{ secrets.REMOTE_SSH_PORT }}
+          script: |
+            cd /home/ubuntu/Board_API
+            git pull origin main
+            sudo docker-compose up
