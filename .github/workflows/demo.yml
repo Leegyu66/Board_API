@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  docker_test_and_run:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -32,6 +32,13 @@ jobs:
         run: |
           docker-compose up -d
 
+      
+  deploy:
+    needs: test
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
       - name: deployments
         uses: appleboy/ssh-action@v0.1.6 # ssh 접속하는 오픈소스
         with:
