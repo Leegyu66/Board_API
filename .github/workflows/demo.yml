@@ -42,4 +42,5 @@ jobs:
           script: |
             cd /home/ubuntu/Board_API
             git pull origin main
-            sudo docker-compose up
+            sudo docker build -t "board_api" .
+            sudo docker-compose up -d
