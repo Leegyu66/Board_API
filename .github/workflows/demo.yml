@@ -48,6 +48,7 @@ jobs:
           port: ${{ secrets.REMOTE_SSH_PORT }}
           script: |
             cd /home/ubuntu/Board_API
+            sudo docker-compose down
             git pull origin main
             sudo docker build -t "board_api" .
             sudo docker-compose up -d
