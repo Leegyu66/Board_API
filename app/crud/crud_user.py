@@ -58,7 +58,7 @@ class CRUDUser():
         access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTE)
         access_token = create_access_token(data={"sub": user.email}, expires_delta=access_token_expires)
 
-        response.set_cookie(key="access_token", value=access_token, expires=access_token_expires, httponly=True)
+        response.set_cookie(key="access_token", value=access_token, expires=access_token_expires, httponly=False)
 
         if not res:
             raise BadRequestError("Invalid user or password")

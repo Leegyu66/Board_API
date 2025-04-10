@@ -6,6 +6,7 @@
 axios.defaults.withCredentials = true;   // 모든 요청에 쿠키/인증정보 포함
 
 const API_URL = "http://3.39.195.46:8080";  // 백엔드 API 주소 (필요에 따라 수정)
+// const API_URL = "http://192.168.100.145:8080"
 
 // DOM 요소들
 const loginForm = document.getElementById("loginForm");
@@ -327,3 +328,28 @@ function getCookie(name) {
   }
   return null;
 }
+
+window.addEventListener("DOMContentLoaded", async () => {
+  const token = getCookie("access_token");
+  console.log(token)
+  if (token) {
+    try {
+      // 로그인된 사용자 정보 불러오기
+      await loadUserName();
+
+      // UI 전환
+      loginForm.style.display = "none";
+      signupForm.style.display = "none";
+      showSignupFormButton.style.display = "none";
+      logoutButton.style.display = "inline-block";
+      boardSection.style.display = "block";
+
+      // 게시글 불러오기
+      loadBoardPosts();
+    } catch (error) {
+      console.warn("자동 로그인 실패 또는 토큰 만료:", error);
+      // 유효하지 않은 토큰이면 쿠키 제거
+      document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    }
+  }
+});

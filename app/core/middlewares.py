@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 origins = [
     "http://3.39.195.46:8080",
+    "http://192.168.100.145:8080",
 ]
 
 def add_middleware(app: FastAPI) -> None:
