@@ -46,5 +46,6 @@ services:
     depends_on:
       - board-api
 
+
 volumes:
   mariadb_data:
