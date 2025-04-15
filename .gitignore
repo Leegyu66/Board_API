@@ -1,2 +1,8 @@
 __pycache__
 venv
+benchmark
+
+*.png
+*.jpg
+*.pt
+*.pth
