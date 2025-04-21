@@ -14,7 +14,7 @@ from concurrent.futures import ProcessPoolExecutor
 
 from app.inference.client import get_sr_service
 from app.inference.sr_service import SuperResolutionService
-from app.schemas.model import SuperResolutionInput
+from app.schemas.model import SuperResolutionInput, SuperResolutionOutput
 
 
 api_router = APIRouter()
@@ -30,6 +30,7 @@ async def super_resolution(
 
     # 1. 입력 모델에서 이미지 바이트 가져오기
     image_bytes = payload.image
+    filename = payload.filename
     # image 필드가 Optional일 경우 None 체크 추가
     # if image_bytes is None:
     #     logger.warning("Request received with null image field.")
@@ -121,4 +122,17 @@ async def super_resolution(
     output_media_type = "image/png"
     logger.info(f"Returning upscaled image with assumed media type: {output_media_type}")
     cv2.imwrite("/app/debug_output/test.png", upscaled_image_bytes)
-    return StreamingResponse(io.BytesIO(upscaled_image_bytes), media_type=output_media_type)
+
+    image_format_extension = ".png"  # 또는 ".jpg" 등 원하는 포맷 지정
+    is_success, buffer = cv2.imencode(image_format_extension, upscaled_image_bytes)
+
+    image_bytes = buffer.tobytes()
+
+    # Base64로 인코딩
+    base64_bytes = base64.b64encode(image_bytes)
+
+    # Base64 바이트를 UTF-8 문자열로 디코딩하여 반환
+    base64_string = base64_bytes.decode('utf-8')
+
+    # return StreamingResponse(io.BytesIO(upscaled_image_bytes), media_type=output_media_type)
+    return SuperResolutionOutput(filename=filename, image=base64_string)
