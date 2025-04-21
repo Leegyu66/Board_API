@@ -3,4 +3,4 @@ from typing import Optional, List, Union
 
 class SuperResolutionInput(BaseModel):
     filename: str
-    image: Optional[bytes]
+    image: Optional[str]

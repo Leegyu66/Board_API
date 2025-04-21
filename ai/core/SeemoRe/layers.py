@@ -29,7 +29,7 @@ class ResGroup(nn.Module):
                  recursive: int = 2,
                  use_shuffle: bool = False):
         super().__init__()
-        
+
         self.local_block = RME(in_ch=in_ch, 
                                num_experts=num_experts, 
                                use_shuffle=use_shuffle, 
@@ -61,7 +61,8 @@ class SME(nn.Module):
         self.norm_2 = LayerNorm(in_ch, data_format='channels_first')
         self.ffn = GatedFFN(in_ch, mlp_ratio=2, kernel_size=3, act_layer=nn.GELU())
         
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Optional[torch.Tensor]) -> torch.Tensor:
+        assert x is not None
         x = self.block(self.norm_1(x)) + x
         x = self.ffn(self.norm_2(x)) + x
         return x
@@ -86,7 +87,8 @@ class StripedConvFormer(nn.Module):
 
         self.attn = StripedConv2d(in_ch, kernel_size=kernel_size, depthwise=True)
     
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Optional[torch.Tensor]) -> torch.Tensor:
+        assert x is not None
         q, v = self.to_qv(x).chunk(2, dim=1)
         q = self.attn(q)
         x = self.proj(q * v)
@@ -113,7 +115,8 @@ class RME(nn.Module):
         self.norm_2 = LayerNorm(in_ch, data_format='channels_first')
         self.ffn = GatedFFN(in_ch, mlp_ratio=2, kernel_size=3, act_layer=nn.GELU())
         
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Optional[torch.Tensor]) -> torch.Tensor:
+        assert x is not None
         x = self.block(self.norm_1(x)) + x
         x = self.ffn(self.norm_2(x)) + x
         return x
@@ -181,7 +184,8 @@ class MoEBlock(nn.Module):
         x = F.interpolate(x, size=(h, w), mode="bilinear", align_corners=False)
         return res + x
     
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: Optional[torch.Tensor]) -> torch.Tensor:
+        assert x is not None
         x = self.conv_1(x)
         
         if self.use_shuffle:
@@ -389,7 +393,8 @@ class GatedFFN(nn.Module):
         x = x + self.sigma * s
         return x
     
-    def forward(self, x: torch.Tensor):
+    def forward(self, x: Optional[torch.Tensor]):
+        assert x is not None
         x = self.fn_1(x)
         x, gate = torch.chunk(x, 2, dim=1)
         

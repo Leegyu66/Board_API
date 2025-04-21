@@ -65,6 +65,7 @@ class SeemoRe_T(nn.Module):
         x = self.norm(x)
         
         # -- HR IMAGE RECONSTRUCTION --
+        assert x is not None
         x = self.conv_2(x) + res
         x = self.upsampler(x)
         x = x / self.img_range + self.mean

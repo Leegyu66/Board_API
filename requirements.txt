@@ -65,3 +65,6 @@ python-multipart
 pydantic-settings
 python-jose[cryptography]
 httpx
+tritonclient[all]
+opencv-python
+torch

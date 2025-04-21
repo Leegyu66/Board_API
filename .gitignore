@@ -6,3 +6,4 @@ benchmark
 *.jpg
 *.pt
 *.pth
+*.zip

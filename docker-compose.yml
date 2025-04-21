@@ -31,9 +31,28 @@ services:
     volumes:
       - ./app:/code/app
       - ./front:/code/front
+      - ./debug_images:/app/debug_output
     depends_on:
       mariadb:
         condition: service_healthy
 
+  triton-server:
+    image: nvcr.io/nvidia/tritonserver:25.01-py3
+    container_name: tritonserver
+    hostname: tritonserver
+    command: tritonserver --model-repository=/model_repo
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./model_repo:/model_repo
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
 volumes:
   mariadb_data:
+  model_repo:

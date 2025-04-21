@@ -1,0 +1,1 @@
+from app.inference.client import get_sr_service
