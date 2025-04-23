@@ -38,7 +38,6 @@ class SuperResolutionService:
     async def predict(self, image):
         image = self.preprocess(image)
         B, C, H, W = image.shape
-        # Construct Triton input
         in0 = grpcclient.InferInput("INPUT__0", [B, C, H, W], "FP32")
 
         in0.set_data_from_numpy(image)
@@ -50,12 +49,10 @@ class SuperResolutionService:
             outputs=[out0]
         )
 
-        # Get raw output
-        output_data = response.as_numpy("OUTPUT__0")  # shape [B, C, H, W]
+        output_data = response.as_numpy("OUTPUT__0")
+
         if output_data is None:
             raise ValueError("No output returned from Triton server.")
 
-        # Postprocess
-        # results = await loop.run_in_executor(executor, self._postprocess, *(self.threshold, self.class_names, output_data))
         result = self.postprocess(output_data)
         return result

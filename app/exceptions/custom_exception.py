@@ -9,3 +9,6 @@ class Forbidden(Exception):
 
 class UnAuthorized(Exception):
     pass
+
+class ServerError(Exception):
+    pass

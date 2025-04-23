@@ -43,8 +43,12 @@ services:
     command: tritonserver --model-repository=/model_repo
     ports:
       - "8000:8000"
+      - "8001:8001"
+      - "8002:8002"
     volumes:
       - ./model_repo:/model_repo
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=1
     deploy:
       resources:
         reservations:
