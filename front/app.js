@@ -483,7 +483,58 @@ if (srImageInput && srUploadButton && srStatus && srResultImage) {
 } else { console.warn("SR file input related elements not found."); }
 
 // SR 처리 요청 버튼 클릭
-if (srUploadButton && srStatus && srResultImage) {
+if (srImageInput && srUploadButton && srStatus && srResultImage && srInputImagePreview) { // ★ srInputImagePreview 추가 확인
+  srImageInput.addEventListener('change', (event) => {
+      srSelectedFile = event.target.files[0];
+      srBase64ImageString = null;
+      srResultImage.src = ""; // 결과 이미지 초기화
+      srInputImagePreview.src = ""; // ★ 입력 이미지 미리보기 초기화
+
+      if (srSelectedFile) {
+          srStatus.textContent = `선택된 파일: ${srSelectedFile.name} (${srSelectedFile.type})`;
+          srUploadButton.disabled = true; // 읽는 동안 비활성화
+
+          const reader = new FileReader();
+
+          reader.onload = function(loadEvent) {
+              const dataUrl = loadEvent.target.result; // 파일 내용을 Data URL로 읽음
+              console.log("SR 파일 읽기 완료 (Data URL).");
+
+              // ★ 입력 이미지 미리보기 설정
+              srInputImagePreview.src = dataUrl; // Data URL을 바로 src에 넣으면 이미지가 보임
+
+              try {
+                  // 순수 Base64 문자열 추출 (API 전송용)
+                  srBase64ImageString = dataUrl.substring(dataUrl.indexOf(',') + 1);
+                  console.log("SR Base64 추출 완료 (첫 50자):", srBase64ImageString.substring(0, 50) + "...");
+                  srStatus.textContent = `파일 준비 완료: ${srSelectedFile.name}. 처리 요청 버튼을 누르세요.`;
+                  srUploadButton.disabled = false; // 버튼 활성화
+              } catch (e) {
+                  console.error("SR Base64 추출 중 오류:", e);
+                  srStatus.textContent = "파일 처리 중 오류가 발생했습니다.";
+                  srUploadButton.disabled = true;
+                  srInputImagePreview.src = ""; // ★ 오류 시 입력 미리보기 초기화
+              }
+          };
+          reader.onerror = function(errorEvent) {
+               console.error("SR 파일 읽기 오류:", errorEvent);
+               srStatus.textContent = "파일을 읽는 중 오류가 발생했습니다.";
+               srUploadButton.disabled = true;
+               srInputImagePreview.src = ""; // ★ 오류 시 입력 미리보기 초기화
+          };
+          // 파일을 Data URL 형식으로 읽기 시작
+          reader.readAsDataURL(srSelectedFile);
+      } else {
+           srStatus.textContent = "파일을 선택해주세요.";
+           srUploadButton.disabled = true;
+           srSelectedFile = null;
+           srInputImagePreview.src = ""; // ★ 파일 선택 취소 시 입력 미리보기 초기화
+      }
+  });
+} else { console.warn("SR file input or preview related elements not found."); } // ★ 메시지 수정
+
+// SR 처리 요청 버튼 클릭
+if (srUploadButton && srStatus && srResultImage && srInputImagePreview) { // ★ srInputImagePreview 추가 확인
   srUploadButton.addEventListener('click', () => {
       if (!srSelectedFile || !srBase64ImageString) {
           alert("먼저 SR 처리할 이미지 파일을 선택해주세요.");
@@ -493,27 +544,29 @@ if (srUploadButton && srStatus && srResultImage) {
       const token = getCookie("access_token");
       if (!token) {
           alert("로그인이 필요합니다.");
-          // 필요시 로그인 페이지로 리다이렉트
-          // window.location.href = '/login.html';
-          return; // 인증 토큰 없으면 중단
+          return;
       }
 
       srStatus.textContent = "SR 처리 요청 중...";
       srUploadButton.disabled = true;
-      srResultImage.src = "";
+      srResultImage.src = ""; // ★ 결과 이미지 자리 비우기 (입력 이미지는 유지됨)
+
+      // ★ 입력 이미지 크기 조절 전, 원래 스타일 저장 (선택 사항)
+      // const originalInputWidth = srInputImagePreview.style.width;
+      // const originalInputHeight = srInputImagePreview.style.height;
 
       const payload = {
-          filename: srSelectedFile.name, // 요청된 고정 파일명
+          filename: srSelectedFile.name,
           image: srBase64ImageString
       };
 
       // axios 를 사용하여 POST 요청 보내기
-      axios.post(`${API_URL}/v1/super-resolution`, payload, { // *** 엔드포인트 수정됨 ***
+      axios.post(`${API_URL}/v1/super-resolution`, payload, {
           headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}` // *** 인증 헤더 추가 ***
+              'Authorization': `Bearer ${token}`
           },
-          timeout: 60000 // SR 처리가 오래 걸릴 수 있으므로 타임아웃 증가 (예: 60초)
+          timeout: 60000
       })
       .then(response => {
           // 성공 응답 처리
@@ -523,51 +576,76 @@ if (srUploadButton && srStatus && srResultImage) {
 
           if (result.image && result.filename) {
                // 결과 이미지 표시 (Data URL 사용)
-               let mimeType = 'image/png'; // 기본 PNG 가정
+               let mimeType = 'image/png';
                const lowerFilename = result.filename.toLowerCase();
                if (lowerFilename.endsWith('.jpg') || lowerFilename.endsWith('.jpeg')) {
                    mimeType = 'image/jpeg';
-               } else if (lowerFilename.endsWith('.webp')) {
-                   mimeType = 'image/webp';
-               } // 필요시 다른 포맷 추가
+               } // ... (다른 포맷 처리) ...
 
                srResultImage.src = `data:${mimeType};base64,${result.image}`;
                srStatus.textContent = `SR 처리 완료! 결과 파일명: ${result.filename}`;
           } else {
               srStatus.textContent = "SR 처리는 완료되었으나 응답에 이미지 데이터가 없습니다.";
                console.warn("SR 응답에 image 또는 filename 필드가 없습니다:", result);
+               srResultImage.src = ""; // ★ 결과 이미지 없음 표시
           }
       })
       .catch(error => {
           // 에러 처리
-          console.error('SR 요청 오류:', error);
-          let errorMsg = "SR 처리 요청 실패";
-          if (error.code === 'ECONNABORTED') {
-              errorMsg += " - 요청 시간 초과";
-          } else if (error.response) {
-              errorMsg += ` (Status: ${error.response.status})`;
-              if (error.response.data && error.response.data.detail) {
-                   errorMsg += ` - ${error.response.data.detail}`;
-              } else if (typeof error.response.data === 'string' && error.response.data.length < 100) {
-                   errorMsg += ` - ${error.response.data}`;
-              } else {
-                   errorMsg += ` - 서버 에러 메시지 확인 필요`;
+          console.error("SR 요청 에러:", error);
+          let errorMsg = "SR 처리 중 오류가 발생했습니다.";
+          if (error.response) {
+              // 서버가 상태 코드로 응답한 경우
+              console.error("에러 데이터:", error.response.data);
+              console.error("에러 상태:", error.response.status);
+              console.error("에러 헤더:", error.response.headers);
+              if (error.response.status === 401) {
+                  errorMsg = "인증에 실패했습니다. 다시 로그인해주세요.";
+              } else if (error.response.status === 429) {
+                  errorMsg = "요청 횟수가 너무 많습니다. 잠시 후 다시 시도해주세요.";
+              } else if (error.response.data && error.response.data.detail) {
+                 errorMsg = `SR 처리 오류: ${error.response.data.detail}`;
               }
           } else if (error.request) {
-              errorMsg += " - 서버 응답 없음";
+              // 요청이 만들어졌으나 응답을 받지 못한 경우 (네트워크 문제 등)
+              console.error("에러 요청:", error.request);
+              errorMsg = "서버에 연결할 수 없습니다. 네트워크 상태를 확인해주세요.";
+              if (error.code === 'ECONNABORTED') {
+                 errorMsg = "요청 시간 초과. 서버 응답이 너무 늦습니다.";
+              }
           } else {
-              errorMsg += ` - ${error.message}`;
+              // 요청 설정 중에 문제가 발생한 경우
+              console.error('에러 메시지:', error.message);
           }
           srStatus.textContent = errorMsg;
+          srResultImage.src = ""; // ★ 에러 시 결과 이미지 초기화
       })
       .finally(() => {
-          // 요청 완료 후 항상 실행
+           // ★ finally 블록은 성공/실패 여부와 관계없이 항상 실행됨
            if (srSelectedFile) {
-              srUploadButton.disabled = false; // 버튼 다시 활성화
+              srUploadButton.disabled = false;
            }
+
+           // ★ 입력 이미지 프리뷰 크기 4배 조정 (naturalWidth/Height 사용)
+           if (srInputImagePreview && srInputImagePreview.naturalWidth > 0 && srInputImagePreview.naturalHeight > 0) {
+               const newWidth = srInputImagePreview.naturalWidth * 4;
+               const newHeight = srInputImagePreview.naturalHeight * 4;
+               srInputImagePreview.style.width = `${newWidth}px`;
+               srInputImagePreview.style.height = `${newHeight}px`;
+               console.log(`Input image preview resized to ${newWidth}x${newHeight}`);
+           } else {
+               console.warn("입력 이미지 프리뷰 크기를 조정할 수 없습니다: 요소 또는 원본 크기를 사용할 수 없음.");
+           }
+
+           // ★ 만약 원래 크기로 되돌릴 필요가 있다면, 여기서 처리
+           // setTimeout(() => {
+           //     srInputImagePreview.style.width = originalInputWidth;
+           //     srInputImagePreview.style.height = originalInputHeight;
+           // }, 5000); // 예를 들어 5초 후에 원래 크기로
       });
   });
-} else { console.warn("SR upload button or related elements not found."); }
+} else { console.warn("SR 업로드 버튼 또는 결과 관련 요소를 찾을 수 없습니다."); } // ★ 메시지 수정
+
 
 
 /* ================================================
@@ -581,6 +659,8 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   // SR 섹션 요소 가져오기 (여기서도 필요)
   const srSectionElement = document.getElementById("srSection");
+  const srInputPreviewElement = document.getElementById("srInputImagePreview"); // ★ 추가
+  const srResultImageElement = document.getElementById("srResultImage"); // ★ 추가
 
   // 기본적으로 로그인/회원가입/SR 섹션 상태 설정
   if (loginForm) loginForm.style.display = "block";
@@ -590,7 +670,9 @@ window.addEventListener("DOMContentLoaded", async () => {
   if (boardSection) boardSection.style.display = "none";
   if (postDetails) postDetails.style.display = "none";
   if (createPostForm) createPostForm.style.display = "none";
-  if (srSectionElement) srSectionElement.style.display = "none"; // *** 기본 숨김 ***
+  if (srSectionElement) srSectionElement.style.display = "none";
+  if (srInputPreviewElement) srInputPreviewElement.src = ""; // ★ 입력 미리보기 초기화
+  if (srResultImageElement) srResultImageElement.src = ""; // ★ 결과 이미지 초기화
   if (loggedUserSpan) loggedUserSpan.textContent = "";
 
   if (token) {
