@@ -15,7 +15,7 @@ services:
     volumes:
       - mariadb_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uchoi -p1234 || exit 1"]
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u@username -p@password || exit 1"]
       interval: 5s
       timeout: 5s
       retries: 5
